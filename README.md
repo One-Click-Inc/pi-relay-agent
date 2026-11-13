@@ -15,10 +15,25 @@ checks its SHA-256 against the one the installer carries, and runs it as the
 oc-relay-agent genkey          a new private key (base64)
 oc-relay-agent pubkey < KEY    its public key
 oc-relay-agent run CONFIG      the connection, until stopped
+oc-relay-agent bridge LISTEN URL [ADDRESS]
+                               the web backup, until stopped (v1.1.0 and later)
 oc-relay-agent version
 ```
 
 `CONFIG` has `key_file=`, `address=` (10.213.x.y), `relay_key=` and `endpoint=` lines.
+
+## The web backup (v1.1.0)
+
+Some client sites' firewalls block WireGuard, or recognise it and cut it off. There the Pi's
+WireGuard (its own, or this agent's) sends to `LISTEN` on the Pi itself (`127.0.0.1:51821`),
+and `bridge` carries each packet as one WebSocket message inside an ordinary HTTPS connection
+to the relay (`wss://NAME/PATH`, on port 443), which hands it to the relay's WireGuard. To the
+firewall it looks like a browser on a website. `ADDRESS` (`IP:443`) is used when the site can't
+look the name up. It only carries WireGuard's packets: WireGuard still encrypts and checks every
+one end to end, so the relay's HTTPS certificate isn't checked, on purpose (it gets through
+firewalls that re-sign HTTPS, and works on Pis with an out-of-date list of certificate
+authorities). The Raspberry Pi program's Pi scripts download this build and switch to it by
+themselves when the relay can't be reached the usual way.
 
 ## Builds
 

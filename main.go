@@ -7,12 +7,17 @@
 //	oc-relay-agent genkey          a new private key (base64), for /etc/oc-relay/key
 //	oc-relay-agent pubkey < KEY    its public key
 //	oc-relay-agent run CONFIG      the connection, until stopped
+//	oc-relay-agent bridge LISTEN URL [ADDRESS]
+//	                               the web backup (bridge.go), until stopped
 //	oc-relay-agent version
 //
 // CONFIG has key=value lines: key_file (the private key's file), address (this Pi's address
 // on the relay's network, 10.213.x.y), relay_key (the relay's public key) and endpoint (the
 // relay's public IP:port). The connection carries only 10.213.0.1, the relay: nothing else on
 // the Pi is routed through it.
+//
+// The bridge is for every Pi at a site whose firewall blocks WireGuard, including newer ones
+// that run the system's own WireGuard: it only carries WireGuard's packets.
 package main
 
 import (
@@ -60,6 +65,15 @@ func main() {
 			usage()
 		}
 		err = run(os.Args[2])
+	case "bridge":
+		if len(os.Args) != 4 && len(os.Args) != 5 {
+			usage()
+		}
+		fallback := ""
+		if len(os.Args) == 5 {
+			fallback = os.Args[4]
+		}
+		err = bridge(os.Args[2], os.Args[3], fallback)
 	case "version":
 		fmt.Println(version)
 	default:
@@ -72,7 +86,8 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: oc-relay-agent genkey | pubkey < KEY | run CONFIG | version")
+	fmt.Fprintln(os.Stderr, "usage: oc-relay-agent genkey | pubkey < KEY | run CONFIG |"+
+		" bridge LISTEN URL [ADDRESS] | version")
 	os.Exit(2)
 }
 
