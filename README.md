@@ -42,11 +42,12 @@ Each release has `oc-relay-agent-linux-arm` (32-bit ARM, ARMv6 and up: every Ras
 release names,
 
 ```
-CGO_ENABLED=0 GOFLAGS=-trimpath GOOS=linux GOARCH=arm GOARM=6 \
+CGO_ENABLED=0 GOFLAGS="-trimpath -buildvcs=false" GOOS=linux GOARCH=arm GOARM=6 \
   go build -ldflags "-s -w -buildid= -X main.version=<tag>" -o oc-relay-agent-linux-arm .
 ```
 
-(and `GOARCH=arm64` for the other) gives the same bytes.
+(and `GOARCH=arm64` for the other) gives the same bytes, from a clone or a plain copy
+(`-buildvcs=false` keeps the clone's commit out of the build; v1.1.0 is Go 1.27.4).
 
 ## Licence
 
